@@ -1,0 +1,233 @@
+'use client';
+
+import React, { useState } from 'react';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native-web';
+import { useAuth } from '@/hooks/useAuth';
+import { SmoothPressable } from '@/components/ui/SmoothPressable';
+
+export function AuthSection() {
+  const { user, loading, signInUser, signUpUser, signOutUser, message } = useAuth();
+  const [mode, setMode] = useState<'signup' | 'signin'>('signup');
+  const [form, setForm] = useState({ fullName: '', email: '', password: '' });
+  const [banner, setBanner] = useState<string | null>(null);
+  const [isBusy, setIsBusy] = useState(false);
+
+  const handleChange = (key: keyof typeof form, value: string) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleSubmit = async () => {
+    setBanner(null);
+    setIsBusy(true);
+    try {
+      if (mode === 'signup') {
+        const created = await signUpUser({ fullName: form.fullName, email: form.email, password: form.password });
+        if (created.ok) {
+          await signInUser({ email: form.email, password: form.password });
+          setBanner('Account created — you are signed in.');
+          setForm((prev) => ({ ...prev, password: '' }));
+        }
+      } else {
+        const signedIn = await signInUser({ email: form.email, password: form.password });
+        if (signedIn.ok) {
+          setBanner('Welcome back!');
+          setForm((prev) => ({ ...prev, password: '' }));
+        }
+      }
+    } finally {
+      setIsBusy(false);
+    }
+  };
+
+  return (
+    <section className="section-shell">
+      <View style={styles.shell}>
+        <View style={styles.copyBlock}>
+          <Text style={styles.sectionLabel}>Account Deck</Text>
+          <Text style={styles.title}>Sign up to save carts, track drops, and push orders straight to the sheet.</Text>
+          <Text style={styles.subtitle}>
+            Accounts are stored via NextAuth + Firebase (Firestore), so you can sign in from any device while staying entirely in your stack.
+          </Text>
+        </View>
+        <View style={styles.formCard}>
+          {user ? (
+            <View style={styles.welcomeBlock}>
+              <Text style={styles.welcomeTitle}>Hi {user.name ?? user.email}</Text>
+              <Text style={styles.welcomeCopy}>You are connected — add kits and finish checkout when you are ready.</Text>
+              <Pressable accessibilityRole="button" onPress={signOutUser} style={styles.signOutButton}>
+                <Text style={styles.signOutText}>Sign out</Text>
+              </Pressable>
+            </View>
+          ) : (
+            <>
+              <View style={styles.modeRow}>
+                <Pressable onPress={() => setMode('signup')} style={[styles.modeButton, mode === 'signup' && styles.modeButtonActive]}>
+                  <Text style={[styles.modeText, mode === 'signup' && styles.modeTextActive]}>Create account</Text>
+                </Pressable>
+                <Pressable onPress={() => setMode('signin')} style={[styles.modeButton, mode === 'signin' && styles.modeButtonActive]}>
+                  <Text style={[styles.modeText, mode === 'signin' && styles.modeTextActive]}>Sign in</Text>
+                </Pressable>
+              </View>
+              {mode === 'signup' && (
+                <TextInput
+                  placeholder="Full name"
+                  value={form.fullName}
+                  editable={!isBusy}
+                  onChangeText={(text) => handleChange('fullName', text)}
+                  style={styles.input}
+                  placeholderTextColor="rgba(255,255,255,0.5)"
+                />
+              )}
+              <TextInput
+                placeholder="Email"
+                value={form.email}
+                editable={!isBusy}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                onChangeText={(text) => handleChange('email', text)}
+                style={styles.input}
+                placeholderTextColor="rgba(255,255,255,0.5)"
+              />
+              <TextInput
+                placeholder="Password"
+                secureTextEntry
+                value={form.password}
+                editable={!isBusy}
+                onChangeText={(text) => handleChange('password', text)}
+                style={styles.input}
+                placeholderTextColor="rgba(255,255,255,0.5)"
+              />
+              <SmoothPressable
+                accessibilityRole="button"
+                onPress={handleSubmit}
+                disabled={isBusy || loading}
+                style={[styles.submitButton, (isBusy || loading) && styles.submitButtonDisabled]}
+              >
+                <Text style={styles.submitText}>{mode === 'signup' ? 'Create & sign in' : 'Sign in'}</Text>
+              </SmoothPressable>
+              {(banner || message) && <Text style={styles.message}>{banner || message}</Text>}
+            </>
+          )}
+        </View>
+      </View>
+    </section>
+  );
+}
+
+const styles = StyleSheet.create({
+  shell: {
+    borderRadius: 32,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(5,5,20,0.65)',
+    padding: 32,
+    flexDirection: 'row',
+    gap: 32,
+    flexWrap: 'wrap',
+  },
+  copyBlock: {
+    flex: 1,
+    minWidth: 260,
+    gap: 12,
+  },
+  sectionLabel: {
+    textTransform: 'uppercase',
+    fontSize: 13,
+    letterSpacing: 2,
+    color: 'rgba(255,255,255,0.55)',
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: 600,
+    color: '#f5f7ff',
+  },
+  subtitle: {
+    color: 'rgba(230,235,255,0.7)',
+    lineHeight: 22,
+    maxWidth: 460,
+  },
+  formCard: {
+    flex: 1,
+    minWidth: 280,
+    padding: 24,
+    borderRadius: 24,
+    backgroundColor: 'rgba(12,12,39,0.65)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+    gap: 14,
+  },
+  modeRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  modeButton: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.16)',
+    alignItems: 'center',
+  },
+  modeButtonActive: {
+    borderColor: '#58f2ff',
+    backgroundColor: 'rgba(88,242,255,0.08)',
+  },
+  modeText: {
+    color: 'rgba(255,255,255,0.6)',
+    fontWeight: 500,
+  },
+  modeTextActive: {
+    color: '#58f2ff',
+  },
+  input: {
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.16)',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    color: '#f4f4ff',
+    fontSize: 16,
+  },
+  submitButton: {
+    marginTop: 4,
+    borderRadius: 20,
+    paddingVertical: 14,
+    alignItems: 'center',
+    backgroundColor: '#ec66ff',
+  },
+  submitButtonDisabled: {
+    opacity: 0.6,
+  },
+  submitText: {
+    color: '#05051a',
+    fontWeight: 600,
+    fontSize: 16,
+  },
+  message: {
+    marginTop: 8,
+    color: '#ffd977',
+  },
+  welcomeBlock: {
+    gap: 12,
+  },
+  welcomeTitle: {
+    fontSize: 24,
+    fontWeight: 600,
+    color: '#f5f7ff',
+  },
+  welcomeCopy: {
+    color: 'rgba(230,235,255,0.75)',
+  },
+  signOutButton: {
+    marginTop: 10,
+    borderRadius: 16,
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
+  signOutText: {
+    color: '#fdfdfd',
+    fontWeight: 600,
+  },
+});

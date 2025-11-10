@@ -1,0 +1,15 @@
+<svg width="480" height="480" viewBox="0 0 480 480" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bvb-body" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#ffe11f" />
+      <stop offset="1" stop-color="#f8c800" />
+    </linearGradient>
+  </defs>
+  <rect width="480" height="480" rx="36" fill="#120400" />
+  <path d="M135 70H195L235 26H295L335 70H395V150H360V430H135V150H95V70H135Z" fill="url(#bvb-body)" stroke="#000000" stroke-width="6" stroke-linejoin="round" />
+  <rect x="155" y="100" width="170" height="300" rx="26" fill="none" stroke="#000000" stroke-width="8" />
+  <rect x="155" y="160" width="170" height="30" fill="#000000" />
+  <rect x="155" y="220" width="170" height="30" fill="#000000" />
+  <rect x="155" y="280" width="170" height="30" fill="#000000" />
+  <path d="M205 70L235 40H275L305 70" fill="#000000" />
+</svg>

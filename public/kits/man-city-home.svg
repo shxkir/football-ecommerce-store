@@ -1,0 +1,17 @@
+<svg width="480" height="480" viewBox="0 0 480 480" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="mc-body" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#7dd3ff" />
+      <stop offset="1" stop-color="#3ba6ff" />
+    </linearGradient>
+    <linearGradient id="mc-stripe" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.9" />
+      <stop offset="1" stop-color="#d0eaff" stop-opacity="0.7" />
+    </linearGradient>
+  </defs>
+  <rect width="480" height="480" rx="36" fill="#041431" />
+  <path d="M140 70H200L240 26H320L360 70H420V150H370V430H140V150H90V70H140Z" fill="url(#mc-body)" stroke="#aee5ff" stroke-width="6" stroke-linejoin="round" />
+  <rect x="228" y="110" width="24" height="280" rx="12" fill="url(#mc-stripe)" />
+  <rect x="180" y="140" width="120" height="90" rx="18" fill="rgba(255,255,255,0.2)" />
+  <path d="M220 70L240 40H280L300 70" fill="#f4f8ff" />
+</svg>

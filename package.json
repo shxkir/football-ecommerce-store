@@ -1,0 +1,32 @@
+{
+  "name": "football-ecommerce-store",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "firebase-admin": "^12.7.0",
+    "googleapis": "^165.0.0",
+    "next": "16.0.1",
+    "next-auth": "^4.24.13",
+    "react": "19.2.0",
+    "react-bits": "^1.0.5",
+    "react-dom": "19.2.0",
+    "react-native-web": "^0.19.12",
+    "three": "^0.181.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/react-native": "^0.72.8",
+    "eslint": "^9",
+    "eslint-config-next": "16.0.1",
+    "typescript": "^5"
+  }
+}

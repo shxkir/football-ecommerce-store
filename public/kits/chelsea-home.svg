@@ -1,0 +1,15 @@
+<svg width="480" height="480" viewBox="0 0 480 480" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="che-body" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#0e4fb5" />
+      <stop offset="1" stop-color="#052f87" />
+    </linearGradient>
+  </defs>
+  <rect width="480" height="480" rx="36" fill="#021131" />
+  <path d="M135 70H195L230 28H290L325 70H385V150H350V430H135V150H95V70H135Z" fill="url(#che-body)" stroke="#4cb2ff" stroke-width="6" stroke-linejoin="round" />
+  <path d="M95 118H140" stroke="#ffd86b" stroke-width="10" stroke-linecap="round" />
+  <path d="M350 118H385" stroke="#ffd86b" stroke-width="10" stroke-linecap="round" />
+  <rect x="175" y="150" width="140" height="34" rx="17" fill="#ffd86b" />
+  <rect x="190" y="210" width="110" height="140" rx="20" fill="rgba(255,255,255,0.15)" />
+  <path d="M210 70L235 40H270L295 70" fill="#59c4ff" />
+</svg>

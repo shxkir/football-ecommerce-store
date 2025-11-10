@@ -1,0 +1,18 @@
+<svg width="480" height="480" viewBox="0 0 480 480" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="ars-body" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#2b1058" />
+      <stop offset="1" stop-color="#5328a6" />
+    </linearGradient>
+    <linearGradient id="ars-stripe" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0" stop-color="#d5ff3f" />
+      <stop offset="1" stop-color="#9dff7a" />
+    </linearGradient>
+  </defs>
+  <rect width="480" height="480" rx="36" fill="#080517" />
+  <path d="M130 70H190L230 30H280L320 70H380V150H340V430H140V150H100V70H130Z" fill="url(#ars-body)" stroke="#7846d9" stroke-width="6" stroke-linejoin="round" />
+  <path d="M100 118H140" stroke="url(#ars-stripe)" stroke-width="10" stroke-linecap="round" />
+  <path d="M340 118H380" stroke="url(#ars-stripe)" stroke-width="10" stroke-linecap="round" />
+  <rect x="170" y="140" width="140" height="28" rx="12" fill="url(#ars-stripe)" />
+  <rect x="170" y="200" width="140" height="160" rx="18" fill="rgba(255,255,255,0.08)" />
+</svg>

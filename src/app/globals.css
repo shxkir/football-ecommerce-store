@@ -1,0 +1,70 @@
+:root {
+  --surface-950: #04040d;
+  --surface-900: #05051a;
+  --surface-800: #0c0c27;
+  --surface-700: #151532;
+  --surface-600: #1e1e46;
+  --text-primary: #f3f4ff;
+  --text-muted: rgba(231, 233, 255, 0.7);
+  --accent-electric: #58f2ff;
+  --accent-pink: #ec66ff;
+  --accent-gold: #fedf76;
+  --radius-xl: 32px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-geist-sans, 'Geist', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
+  color: var(--text-primary);
+  background: radial-gradient(circle at top, rgba(29, 40, 89, 0.5), transparent 55%),
+    radial-gradient(circle at 20% 20%, rgba(88, 242, 255, 0.25), transparent 35%),
+    radial-gradient(circle at 80% 0%, rgba(236, 102, 255, 0.18), transparent 40%),
+    var(--surface-950);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+main {
+  width: 100%;
+}
+
+.store-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(262px, 1fr));
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.section-shell {
+  position: relative;
+  padding: 3.5rem clamp(1.25rem, 4vw, 4rem);
+}
+
+.glass-panel {
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(12, 12, 39, 0.75);
+  backdrop-filter: blur(20px);
+}
+
+.badge-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.9rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 768px) {
+  .section-shell {
+    padding: 2.5rem 1.25rem;
+  }
+}
