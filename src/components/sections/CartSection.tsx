@@ -8,7 +8,7 @@ export function CartSection() {
   const { items, subtotal, shipping, total, updateQuantity, removeItem } = useCart();
 
   return (
-    <section className="section-shell">
+    <section className="section-shell" id="cart">
       <View style={styles.shell}>
         <View style={styles.headerRow}>
           <View>

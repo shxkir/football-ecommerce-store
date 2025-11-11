@@ -1,16 +1,34 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native-web';
 import { useAuth } from '@/hooks/useAuth';
 import { SmoothPressable } from '@/components/ui/SmoothPressable';
 
-export function AuthSection() {
+interface AuthSectionProps {
+  sectionLabel?: string;
+  title?: string;
+  subtitle?: string;
+  initialMode?: 'signup' | 'signin';
+  showModeToggle?: boolean;
+}
+
+export function AuthSection({
+  sectionLabel = 'Account Deck',
+  title = 'Sign up to save carts, track drops, and push orders straight to the sheet.',
+  subtitle = 'Accounts are stored via NextAuth + Firebase (Firestore), so you can sign in from any device while staying entirely in your stack.',
+  initialMode = 'signup',
+  showModeToggle = true,
+}: AuthSectionProps = {}) {
   const { user, loading, signInUser, signUpUser, signOutUser, message } = useAuth();
-  const [mode, setMode] = useState<'signup' | 'signin'>('signup');
+  const [mode, setMode] = useState<'signup' | 'signin'>(initialMode);
   const [form, setForm] = useState({ fullName: '', email: '', password: '' });
   const [banner, setBanner] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
+
+  useEffect(() => {
+    setMode(initialMode);
+  }, [initialMode]);
 
   const handleChange = (key: keyof typeof form, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -43,11 +61,9 @@ export function AuthSection() {
     <section className="section-shell">
       <View style={styles.shell}>
         <View style={styles.copyBlock}>
-          <Text style={styles.sectionLabel}>Account Deck</Text>
-          <Text style={styles.title}>Sign up to save carts, track drops, and push orders straight to the sheet.</Text>
-          <Text style={styles.subtitle}>
-            Accounts are stored via NextAuth + Firebase (Firestore), so you can sign in from any device while staying entirely in your stack.
-          </Text>
+          <Text style={styles.sectionLabel}>{sectionLabel}</Text>
+          <Text style={styles.title}>{title}</Text>
+          <Text style={styles.subtitle}>{subtitle}</Text>
         </View>
         <View style={styles.formCard}>
           {user ? (
@@ -60,14 +76,18 @@ export function AuthSection() {
             </View>
           ) : (
             <>
-              <View style={styles.modeRow}>
-                <Pressable onPress={() => setMode('signup')} style={[styles.modeButton, mode === 'signup' && styles.modeButtonActive]}>
-                  <Text style={[styles.modeText, mode === 'signup' && styles.modeTextActive]}>Create account</Text>
-                </Pressable>
-                <Pressable onPress={() => setMode('signin')} style={[styles.modeButton, mode === 'signin' && styles.modeButtonActive]}>
-                  <Text style={[styles.modeText, mode === 'signin' && styles.modeTextActive]}>Sign in</Text>
-                </Pressable>
-              </View>
+              {showModeToggle ? (
+                <View style={styles.modeRow}>
+                  <Pressable onPress={() => setMode('signup')} style={[styles.modeButton, mode === 'signup' && styles.modeButtonActive]}>
+                    <Text style={[styles.modeText, mode === 'signup' && styles.modeTextActive]}>Create account</Text>
+                  </Pressable>
+                  <Pressable onPress={() => setMode('signin')} style={[styles.modeButton, mode === 'signin' && styles.modeButtonActive]}>
+                    <Text style={[styles.modeText, mode === 'signin' && styles.modeTextActive]}>Sign in</Text>
+                  </Pressable>
+                </View>
+              ) : (
+                <Text style={styles.fixedModeLabel}>{mode === 'signup' ? 'Create account' : 'Sign in'}</Text>
+              )}
               {mode === 'signup' && (
                 <TextInput
                   placeholder="Full name"
@@ -159,6 +179,11 @@ const styles = StyleSheet.create({
   modeRow: {
     flexDirection: 'row',
     gap: 12,
+  },
+  fixedModeLabel: {
+    color: 'rgba(255,255,255,0.75)',
+    fontWeight: 600,
+    fontSize: 16,
   },
   modeButton: {
     flex: 1,

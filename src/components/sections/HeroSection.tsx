@@ -2,10 +2,10 @@
 
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native-web';
-import LiquidEther from '@/components/backgrounds/LiquidEther';
 
 interface HeroSectionProps {
-  onShopPress: () => void;
+  onPrimaryCta: () => void;
+  onSecondaryCta: () => void;
 }
 
 const heroStats = [
@@ -14,16 +14,10 @@ const heroStats = [
   { label: 'Avg. Ship', value: '48 hrs' },
 ];
 
-export function HeroSection({ onShopPress }: HeroSectionProps) {
+export function HeroSection({ onPrimaryCta, onSecondaryCta }: HeroSectionProps) {
   return (
     <View style={styles.heroWrapper}>
       <View style={styles.background}>
-        <LiquidEther
-          colors={['#4c1aff', '#15f0ff', '#ec66ff']}
-          cursorSize={140}
-          autoIntensity={2.6}
-          resolution={0.4}
-        />
         <View style={styles.heroGradient} />
       </View>
       <View style={styles.heroContent}>
@@ -33,10 +27,10 @@ export function HeroSection({ onShopPress }: HeroSectionProps) {
           Authenticated drops, stitched personalization, and a cart that follows you from scouting to checkout.
         </Text>
         <View style={styles.ctaRow}>
-          <Pressable accessibilityRole="button" onPress={onShopPress} style={styles.primaryCta}>
+          <Pressable accessibilityRole="button" onPress={onPrimaryCta} style={styles.primaryCta}>
             <Text style={styles.primaryCtaText}>Shop Kits</Text>
           </Pressable>
-          <Pressable accessibilityRole="button" onPress={() => onShopPress()} style={styles.secondaryCta}>
+          <Pressable accessibilityRole="button" onPress={onSecondaryCta} style={styles.secondaryCta}>
             <Text style={styles.secondaryCtaText}>Browse Lookbook</Text>
           </Pressable>
         </View>

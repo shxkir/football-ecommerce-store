@@ -1,23 +1,7 @@
 import type { NextAuthOptions } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { compare } from 'bcrypt';
-import { getFirestoreDb } from '@/lib/firebaseAdmin';
-
-interface StoredUser {
-  name?: string | null;
-  email: string;
-  password: string;
-}
-
-async function findUserByEmail(email: string) {
-  const firestore = getFirestoreDb();
-  const snapshot = await firestore.collection('users').where('email', '==', email).limit(1).get();
-  if (snapshot.empty) {
-    return null;
-  }
-  const doc = snapshot.docs[0];
-  return { id: doc.id, ...(doc.data() as StoredUser) };
-}
+import { findUserByEmail } from '@/lib/userStore';
 
 export const authOptions: NextAuthOptions = {
   session: {

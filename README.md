@@ -46,6 +46,7 @@ Create a `.env.local` file (copy `.env.local.example`) with the following keys:
 | `GOOGLE_SERVICE_ACCOUNT_EMAIL` | Service account email (e.g. `orders-bot@project.iam.gserviceaccount.com`). |
 | `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY` | Multiline private key. Keep the `-----BEGIN PRIVATE KEY-----` block and replace literal `\n` with actual new lines or escape them as `\\n`. |
 | `GOOGLE_SPREADSHEET_ID` | ID of the target spreadsheet (the long ID inside the sheet URL). |
+| `ADMIN_ACCESS_TOKEN` | Token required when calling `/api/orders?token=...` to review stored orders (defaults to `demo-admin-token`). |
 
 ### Google Sheets setup
 
@@ -55,6 +56,14 @@ Create a `.env.local` file (copy `.env.local.example`) with the following keys:
 4. Copy the email, key, and sheet ID into `.env.local`.
 
 When checkout succeeds, each order appends a row containing metadata, totals, and a serialized line item summary.
+
+#### Verifying your Google Sheet
+
+Once those variables are set and the dev server restarts, every checkout pushes a row to `https://docs.google.com/spreadsheets/d/<GOOGLE_SPREADSHEET_ID>/edit` on the `Orders` tab. You can also fetch `GET /api/orders?token=<ADMIN_ACCESS_TOKEN>` to confirm the latest payloads without opening the sheet.
+
+### Local order storage fallback
+
+If the Google Sheets credentials aren't provided, orders are stored inside `.data/orders.json` so the checkout can still complete during demos. Use `GET /api/orders?token=demo-admin-token` (or whatever you set via `ADMIN_ACCESS_TOKEN`) to review the captured payloads. Delete `.data/orders.json` any time you want to wipe the local queue.
 
 ## Project Structure
 

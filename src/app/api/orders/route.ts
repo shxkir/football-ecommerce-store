@@ -1,27 +1,8 @@
-import { google } from 'googleapis';
 import { NextRequest, NextResponse } from 'next/server';
 import type { OrderPayload } from '@/types/store';
+import { appendOrder, getSheetAccessUrl, isGoogleSheetsEnabled, listOrders } from '@/lib/orderStore';
 
-const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
-
-function getSheetsClient() {
-  const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-  const privateKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY?.replace(/\\n/g, '\n');
-  const spreadsheetId = process.env.GOOGLE_SPREADSHEET_ID;
-
-  if (!clientEmail || !privateKey || !spreadsheetId) {
-    throw new Error('Missing Google Sheets environment variables.');
-  }
-
-  const auth = new google.auth.JWT({
-    email: clientEmail,
-    key: privateKey,
-    scopes: SCOPES,
-  });
-
-  const sheets = google.sheets({ version: 'v4', auth });
-  return { sheets, spreadsheetId };
-}
+const ADMIN_ACCESS_TOKEN = process.env.ADMIN_ACCESS_TOKEN || 'demo-admin-token';
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,40 +11,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: 'Invalid order payload.' }, { status: 400 });
     }
 
-    const { sheets, spreadsheetId } = getSheetsClient();
-    const shipping = payload.shipping;
-    const values = [
-      payload.placedAt,
-      payload.user.fullName,
-      payload.user.email,
-      shipping.fullName,
-      shipping.email,
-      shipping.phone,
-      shipping.address,
-      `${shipping.city}, ${shipping.country}`,
-      shipping.paymentMethod,
-      shipping.jerseyName || '',
-      shipping.jerseyNumber || '',
-      payload.totals.subtotal,
-      payload.totals.shipping,
-      payload.totals.total,
-      payload.items
-        .map((item) => `${item.name} x${item.quantity} (${item.size}) - $${item.price}`)
-        .join(' | '),
-    ];
+    const stored = await appendOrder(payload);
+    const source = isGoogleSheetsEnabled() ? 'sheets' : 'local';
+    const sheetUrl = getSheetAccessUrl();
+    const message = source === 'sheets' ? 'Order synced to Google Sheets ✔' : 'Order placed successfully. (Connect Google Sheets to auto-sync.)';
+    const adminReviewUrl = `/api/orders?token=${ADMIN_ACCESS_TOKEN}`;
 
-    await sheets.spreadsheets.values.append({
-      spreadsheetId,
-      range: 'Orders!A1',
-      valueInputOption: 'RAW',
-      requestBody: {
-        values: [values],
-      },
-    });
-
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, orderId: stored.id, source, message, adminReviewUrl, sheetUrl });
   } catch (error) {
     console.error('[orders]', error);
     return NextResponse.json({ message: error instanceof Error ? error.message : 'Failed to append order.' }, { status: 500 });
+  }
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const token = request.nextUrl.searchParams.get('token');
+    if (!token || token !== ADMIN_ACCESS_TOKEN) {
+      return NextResponse.json({ message: 'Unauthorized.' }, { status: 401 });
+    }
+    const orders = await listOrders();
+    return NextResponse.json({ orders, source: isGoogleSheetsEnabled() ? 'sheets' : 'local', sheetUrl: getSheetAccessUrl() });
+  } catch (error) {
+    console.error('[orders.list]', error);
+    return NextResponse.json({ message: 'Unable to load orders.' }, { status: 500 });
   }
 }

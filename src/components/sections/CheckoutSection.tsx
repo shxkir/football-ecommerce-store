@@ -1,10 +1,12 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native-web';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/context/CartContext';
 import type { ShippingDetails } from '@/types/store';
+
+type StatusLink = { url: string; label: string };
 
 const initialForm: ShippingDetails = {
   fullName: '',
@@ -24,6 +26,7 @@ export function CheckoutSection() {
   const { items, subtotal, shipping, total, clearCart } = useCart();
   const [form, setForm] = useState<ShippingDetails>(initialForm);
   const [status, setStatus] = useState<string | null>(null);
+  const [statusLink, setStatusLink] = useState<StatusLink | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -38,18 +41,32 @@ export function CheckoutSection() {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
+  const updateStatus = (message: string | null, link?: StatusLink) => {
+    setStatus(message);
+    setStatusLink(link ?? null);
+  };
+
+  const handleStatusLinkPress = useCallback(() => {
+    if (!statusLink?.url) {
+      return;
+    }
+    if (typeof window !== 'undefined') {
+      window.open(statusLink.url, '_blank', 'noopener,noreferrer');
+    }
+  }, [statusLink]);
+
   const handleSubmit = async () => {
-    setStatus(null);
+    updateStatus(null);
     if (!user) {
-      setStatus('Please sign in to place an order.');
+      updateStatus('Please sign in to place an order.');
       return;
     }
     if (items.length === 0) {
-      setStatus('Add at least one kit to your cart.');
+      updateStatus('Add at least one kit to your cart.');
       return;
     }
     if (!form.address || !form.city || !form.country) {
-      setStatus('Fill out your shipping details.');
+      updateStatus('Fill out your shipping details.');
       return;
     }
 
@@ -72,14 +89,22 @@ export function CheckoutSection() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
+      const data = await response.json().catch(() => null);
       if (!response.ok) {
-        const error = await response.json().catch(() => ({ message: 'Order failed.' }));
-        throw new Error(error.message || 'Unable to sync order.');
+        throw new Error((data && typeof data.message === 'string' && data.message) || 'Unable to sync order.');
       }
-      setStatus('Order synced to Google Sheets ✔');
+      const successMessage = (data && typeof data.message === 'string' && data.message) || 'Order synced to Google Sheets ✔';
+      const sheetUrl = data && typeof data.sheetUrl === 'string' ? data.sheetUrl : null;
+      const adminReviewUrl = data && typeof data.adminReviewUrl === 'string' ? data.adminReviewUrl : null;
+      const link: StatusLink | undefined = sheetUrl
+        ? { url: sheetUrl, label: 'Open Google Sheet' }
+        : adminReviewUrl
+          ? { url: adminReviewUrl, label: 'Review stored orders' }
+          : undefined;
+      updateStatus(successMessage, link);
       clearCart();
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : 'Unexpected error while creating order.');
+      updateStatus(error instanceof Error ? error.message : 'Unexpected error while creating order.');
     } finally {
       setSubmitting(false);
     }
@@ -138,6 +163,11 @@ export function CheckoutSection() {
             <Text style={styles.submitText}>{submitting ? 'Syncing…' : 'Place order'}</Text>
           </Pressable>
           {status && <Text style={styles.status}>{status}</Text>}
+          {statusLink && (
+            <Pressable accessibilityRole="link" onPress={handleStatusLinkPress} style={styles.statusLinkButton}>
+              <Text style={styles.statusLinkText}>{statusLink.label}</Text>
+            </Pressable>
+          )}
         </View>
       </View>
     </section>
@@ -255,5 +285,18 @@ const styles = StyleSheet.create({
   status: {
     marginTop: 8,
     color: '#fedf76',
+  },
+  statusLinkButton: {
+    marginTop: 6,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: 'rgba(88,242,255,0.5)',
+  },
+  statusLinkText: {
+    color: '#58f2ff',
+    fontWeight: 600,
   },
 });

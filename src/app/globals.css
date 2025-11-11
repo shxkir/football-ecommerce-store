@@ -27,6 +27,34 @@ body {
     var(--surface-950);
   min-height: 100vh;
   overflow-x: hidden;
+  position: relative;
+}
+
+.app-liquid-background {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.site-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-bottom: 64px;
+  position: relative;
+  z-index: 1;
+}
+
+.site-content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+}
+
+.page-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
 main {

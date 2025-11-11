@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native-web';
 import { kits } from '@/data/kits';
 import { useCart } from '@/context/CartContext';
@@ -10,6 +10,7 @@ import { SmoothPressable } from '@/components/ui/SmoothPressable';
 export function StoreSection() {
   const { addItem } = useCart();
   const [sizeSelections, setSizeSelections] = useState<Record<string, string>>({});
+  const [feedback, setFeedback] = useState<string | null>(null);
 
   const products = useMemo(() => kits, []);
 
@@ -20,7 +21,16 @@ export function StoreSection() {
   const handleAddToCart = (product: Product) => {
     const chosenSize = sizeSelections[product.id] ?? product.sizes[0];
     addItem(product, chosenSize);
+    setFeedback(`Added ${product.name} · ${chosenSize} to cart`);
   };
+
+  useEffect(() => {
+    if (!feedback) {
+      return;
+    }
+    const timeout = setTimeout(() => setFeedback(null), 2600);
+    return () => clearTimeout(timeout);
+  }, [feedback]);
 
   return (
     <section className="section-shell" id="store">
@@ -31,6 +41,14 @@ export function StoreSection() {
         </View>
         <Text style={styles.sectionSubtitle}>Layered fabric stories, limited federation drops, and curated badge tiers.</Text>
       </View>
+      {feedback && (
+        <View style={styles.feedbackOverlay} pointerEvents="box-none">
+          <View style={styles.feedbackToast} accessibilityLiveRegion="polite">
+            <Text style={styles.feedbackTitle}>Added to cart</Text>
+            <Text style={styles.feedbackText}>{feedback}</Text>
+          </View>
+        </View>
+      )}
       <div className="store-grid">
         {products.map((product) => (
           <View key={product.id} style={styles.productCard}>
@@ -82,6 +100,43 @@ const styles = StyleSheet.create({
     gap: 24,
     flexWrap: 'wrap',
     marginBottom: 32,
+  },
+  feedbackOverlay: {
+    position: 'fixed',
+    bottom: 32,
+    right: 0,
+    left: 0,
+    paddingHorizontal: 16,
+    alignItems: 'flex-end',
+    zIndex: 50,
+    pointerEvents: 'none',
+  },
+  feedbackToast: {
+    width: '100%',
+    maxWidth: 360,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(88,242,255,0.35)',
+    backgroundColor: 'rgba(5,25,40,0.94)',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    gap: 4,
+    shadowColor: '#030b12',
+    shadowOpacity: 0.65,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 16 },
+    pointerEvents: 'auto',
+  },
+  feedbackTitle: {
+    fontSize: 12,
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+    color: 'rgba(255,255,255,0.55)',
+  },
+  feedbackText: {
+    color: '#58f2ff',
+    fontWeight: 600,
+    fontSize: 15,
   },
   sectionLabel: {
     textTransform: 'uppercase',

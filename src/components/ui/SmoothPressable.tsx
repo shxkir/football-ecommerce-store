@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React, { useMemo } from 'react';
 import type { PressableProps, StyleProp, ViewStyle } from 'react-native';
 import { Animated, Easing, Pressable } from 'react-native-web';
 
@@ -11,32 +11,32 @@ interface SmoothPressableProps extends Omit<PressableProps, 'style' | 'children'
 }
 
 export function SmoothPressable({ children, onPress, disabled, style, wrapperStyle, ...pressableProps }: SmoothPressableProps) {
-  const scale = useRef(new Animated.Value(1));
-  const fade = useRef(new Animated.Value(1));
+  const scale = useMemo(() => new Animated.Value(1), []);
+  const fade = useMemo(() => new Animated.Value(1), []);
 
   const runPulse = () => {
     Animated.sequence([
       Animated.parallel([
-        Animated.timing(scale.current, {
+        Animated.timing(scale, {
           toValue: 1.08,
           duration: 160,
           easing: Easing.out(Easing.quad),
           useNativeDriver: true,
         }),
-        Animated.timing(fade.current, {
+        Animated.timing(fade, {
           toValue: 0.9,
           duration: 160,
           useNativeDriver: true,
         }),
       ]),
       Animated.parallel([
-        Animated.spring(scale.current, {
+        Animated.spring(scale, {
           toValue: 1,
           friction: 4,
           tension: 140,
           useNativeDriver: true,
         }),
-        Animated.timing(fade.current, {
+        Animated.timing(fade, {
           toValue: 1,
           duration: 140,
           easing: Easing.inOut(Easing.quad),
@@ -50,14 +50,14 @@ export function SmoothPressable({ children, onPress, disabled, style, wrapperSty
     if (disabled) {
       return;
     }
-    scale.current.stopAnimation();
-    fade.current.stopAnimation();
+    scale.stopAnimation();
+    fade.stopAnimation();
     runPulse();
     onPress?.();
   };
 
   return (
-    <Animated.View style={[wrapperStyle, { transform: [{ scale: scale.current }], opacity: fade.current }]}>
+    <Animated.View style={[wrapperStyle, { transform: [{ scale }], opacity: fade }]}>
       <Pressable {...pressableProps} disabled={disabled} onPress={handlePress} style={style}>
         {children}
       </Pressable>
