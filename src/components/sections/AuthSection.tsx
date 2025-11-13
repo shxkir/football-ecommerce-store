@@ -25,6 +25,9 @@ export function AuthSection({
   const [form, setForm] = useState({ fullName: '', email: '', password: '' });
   const [banner, setBanner] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
+  const [otpRequired, setOtpRequired] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
+  const [otpEmail, setOtpEmail] = useState('');
 
   useEffect(() => {
     setMode(initialMode);
@@ -46,11 +49,54 @@ export function AuthSection({
           setForm((prev) => ({ ...prev, password: '' }));
         }
       } else {
+        // Request OTP for sign-in
+        const response = await fetch('/api/auth/login-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: form.email, password: form.password }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.requiresOtp) {
+          // Redirect to OTP verification page
+          const params = new URLSearchParams({
+            email: form.email,
+            password: form.password,
+          });
+          window.location.href = `/verify-otp?${params.toString()}`;
+        } else if (!response.ok) {
+          setBanner(data.message || 'Login failed');
+        }
+      }
+    } finally {
+      setIsBusy(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    setBanner(null);
+    setIsBusy(true);
+    try {
+      const response = await fetch('/api/auth/verify-login-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: otpEmail, code: otpCode }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.verified) {
+        // Now actually sign in with NextAuth
         const signedIn = await signInUser({ email: form.email, password: form.password });
         if (signedIn.ok) {
-          setBanner('Welcome back!');
+          setBanner('OTP verified! Welcome back!');
           setForm((prev) => ({ ...prev, password: '' }));
+          setOtpRequired(false);
+          setOtpCode('');
         }
+      } else {
+        setBanner(data.message || 'Invalid OTP code');
       }
     } finally {
       setIsBusy(false);
@@ -74,6 +120,43 @@ export function AuthSection({
                 <Text style={styles.signOutText}>Sign out</Text>
               </Pressable>
             </View>
+          ) : otpRequired ? (
+            <>
+              <Text style={styles.fixedModeLabel}>Verify OTP</Text>
+              <Text style={styles.otpInstructions}>
+                Enter the 6-digit code sent to your email
+              </Text>
+              <TextInput
+                placeholder="6-digit code"
+                value={otpCode}
+                editable={!isBusy}
+                keyboardType="number-pad"
+                maxLength={6}
+                onChangeText={setOtpCode}
+                style={[styles.input, styles.otpInput]}
+                placeholderTextColor="rgba(255,255,255,0.5)"
+              />
+              <SmoothPressable
+                accessibilityRole="button"
+                onPress={handleVerifyOtp}
+                disabled={isBusy || otpCode.length !== 6}
+                style={[styles.submitButton, (isBusy || otpCode.length !== 6) && styles.submitButtonDisabled]}
+              >
+                <Text style={styles.submitText}>Verify OTP</Text>
+              </SmoothPressable>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => {
+                  setOtpRequired(false);
+                  setOtpCode('');
+                  setBanner(null);
+                }}
+                style={styles.backLink}
+              >
+                <Text style={styles.backLinkText}>← Back to sign in</Text>
+              </Pressable>
+              {banner && <Text style={styles.message}>{banner}</Text>}
+            </>
           ) : (
             <>
               {showModeToggle ? (
@@ -117,6 +200,15 @@ export function AuthSection({
                 style={styles.input}
                 placeholderTextColor="rgba(255,255,255,0.5)"
               />
+              {mode === 'signin' && (
+                <Pressable
+                  accessibilityRole="link"
+                  onPress={() => (window.location.href = '/forgot-password')}
+                  style={styles.forgotPasswordLink}
+                >
+                  <Text style={styles.forgotPasswordText}>Forgot password?</Text>
+                </Pressable>
+              )}
               <SmoothPressable
                 accessibilityRole="button"
                 onPress={handleSubmit}
@@ -254,5 +346,35 @@ const styles = StyleSheet.create({
   signOutText: {
     color: '#fdfdfd',
     fontWeight: 600,
+  },
+  forgotPasswordLink: {
+    alignSelf: 'flex-end',
+    marginTop: -8,
+    marginBottom: 4,
+  },
+  forgotPasswordText: {
+    color: '#58f2ff',
+    fontSize: 14,
+    textDecorationLine: 'underline',
+  },
+  otpInstructions: {
+    color: 'rgba(230,235,255,0.7)',
+    fontSize: 14,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  otpInput: {
+    fontSize: 24,
+    fontWeight: '600',
+    letterSpacing: 8,
+    textAlign: 'center',
+  },
+  backLink: {
+    alignSelf: 'center',
+    marginTop: 12,
+  },
+  backLinkText: {
+    color: '#58f2ff',
+    fontSize: 14,
   },
 });

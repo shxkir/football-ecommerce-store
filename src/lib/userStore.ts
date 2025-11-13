@@ -138,6 +138,37 @@ export async function createUser(payload: CreateUserPayload) {
   return createUserLocally(payload);
 }
 
+async function updateUserPasswordLocally(email: string, newPassword: string) {
+  const users = await readLocalUsers();
+  const user = users.find((u) => u.email === email);
+  if (!user) {
+    throw new Error('User not found');
+  }
+  user.password = newPassword;
+  user.updatedAt = new Date().toISOString();
+  await writeLocalUsers(users);
+}
+
+async function updateUserPasswordInFirestore(email: string, newPassword: string) {
+  const firestore = getFirestoreDb();
+  const snapshot = await firestore.collection('users').where('email', '==', email).limit(1).get();
+  if (snapshot.empty) {
+    throw new Error('User not found');
+  }
+  const doc = snapshot.docs[0];
+  await doc.ref.update({
+    password: newPassword,
+    updatedAt: FieldValue.serverTimestamp(),
+  });
+}
+
+export async function updateUserPassword(email: string, newPassword: string) {
+  if (firebaseConfigured) {
+    return updateUserPasswordInFirestore(email, newPassword);
+  }
+  return updateUserPasswordLocally(email, newPassword);
+}
+
 export function isFirestoreUserStoreEnabled() {
   return firebaseConfigured;
 }
